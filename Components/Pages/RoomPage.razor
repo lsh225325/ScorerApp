@@ -1,0 +1,206 @@
+﻿@page "/room/{roomid}"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@attribute [Authorize]
+@inject RoomService roomService
+@inject UserManager<ApplicationUser> userManager
+@inject ScoreService scoreService
+@inject NavigationManager Navigation
+@inject Radzen.DialogService dialogService
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+<PageTitle>房间代码：@room!.Code</PageTitle>
+
+<div class="row flex justify-content-center" style="padding-top:20px">
+    <div class="col-md-6">
+        @* <RadzenButton Shade="Shade.Dark" Variant="Variant.Filled"
+        Size="ButtonSize.Large"
+        ButtonStyle="ButtonStyle.Primary" class="rz-border-radius-6 justify-content-center " style="width:100%">
+        <b>发送给朋友</b>
+        </RadzenButton> *@
+
+        <RadzenText TextStyle="TextStyle.Body1" TextAlign="TextAlign.Center">
+            <strong>房间代码：@room!.Code</strong>
+        </RadzenText>
+
+        <MyComponent my=@(players.FirstOrDefault(o=>o.UserId==userId)!) />
+
+        <table class="table align-content-center text-white">
+            <thead>
+                <tr>
+                    <th>玩家</th>
+                    <th>加入时间</th>
+                    <th>得分</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in players!)
+                {
+                    if (item.UserId == userId) continue;
+                    <tr>
+                        <td>
+                            <RadzenImage Path="@item.HeadImgUrl" Style="width: 50px; height: 50px; border-radius: 50%;" />
+                            <br />
+                            <a>..@item.NickName @item.UserName</a>
+                        </td>
+                        <td class="flex align-content-center">
+                            @item.Created
+                        </td>
+                        <td class="flex flex-column align-content-center">
+                            @item.Score
+                        </td>
+                        <td class="flex align-content-center">
+                            <RadzenButton Shade="Shade.Dark" Variant="Variant.Filled"
+                                Click=@(()=>ShowInlineDialog(item.UserId!))
+                                class="rz-border-radius-6 justify-content-center " ButtonStyle="ButtonStyle.Info">
+                                <b>给分</b>
+                            </RadzenButton>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+        <div style="padding-top:20px">
+            <ScoreItemPage items=@(scoreItems!.Where(o=>o.UserId==userId).ToList()) />
+        </div>
+    </div>
+</div>
+
+
+
+
+@code {
+    [Parameter]public string roomId { get; set; }
+    public Room? room = new();
+
+    bool allowVirtualization = true;
+
+    private string userId;
+    private MyInfo my = new();
+    private List<MyInfo> players;
+    private List<ScoreItem>? scoreItems;
+
+    private HubConnection? hubConnection;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetUserId();
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(roomId)) return;
+
+        await roomService.JoinGame(roomId, userId);
+        await GetPlayers();
+        room = await roomService.GetRoomAsync(roomId);
+
+        scoreItems = await scoreService.GetItemsByRoomId(roomId);
+        if (scoreItems.Count > 0) MathPlayerScoer(scoreItems);
+
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(Navigation.ToAbsoluteUri("/SignHub"))
+            .Build();
+
+        hubConnection.On("SendMessage", async () =>
+            {
+                await GetPlayers();
+                scoreItems = await scoreService.GetItemsByRoomId(roomId);
+                MathPlayerScoer(scoreItems);
+
+                await InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+    }
+
+
+    private async Task GetUserId()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                userId = user.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            }
+        }
+    }
+
+
+    private async Task AddScore(string fromUserId, int score)
+    {
+        if (score <= 0) return;
+        if (fromUserId == userId) return;
+        await scoreService.AddScore(userId, roomId, score, fromUserId);
+        scoreItems = await scoreService.GetItemsByRoomId(roomId);
+        MathPlayerScoer(scoreItems);
+
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage");
+        }
+        StateHasChanged();
+    }
+
+    private void MathPlayerScoer(List<ScoreItem> items)
+    {
+        foreach (var player in players)
+        {
+            player.Score = items
+                .Where(c => c.UserId == player.UserId)
+                .Sum(o => o.Score);
+        }
+    }
+
+    private async Task GetPlayers()
+    {
+        var py = await roomService.GetPlayersByRoom(roomId);
+        players = py.Select(p => new MyInfo
+                        {
+                            UserId = p.UserId,
+                            NickName = string.IsNullOrEmpty(p.User!.NickName) ? p.User.UserName : p.User.NickName,
+                            HeadImgUrl = string.IsNullOrEmpty(p.User.HeadImgUrl) ? "/favicon.png" : p.User.HeadImgUrl,
+                            Created = p.CreateTime
+                        }).ToList();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+
+
+    private async Task ShowInlineDialog(string usreid)
+    {
+        int addScore = 1;
+        var result = await dialogService.OpenAsync("", ds =>
+                @<RadzenStack>
+                    <div style="height:200px" class="row  justify-content-center align-content-center">
+                        <RadzenText TextStyle="TextStyle.H5" class="text-center"><b>给分</b></RadzenText>
+                        <RadzenNumeric Min="1" Max="1000" @bind-Value=@addScore class="text-center" Style="width:20%;height:50px" />
+                    </div>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center"
+                        JustifyContent="JustifyContent.Center">
+                        <RadzenButton Variant="Variant.Outlined" Style="width:100%" Text="给分" Size="ButtonSize.Large" Icon="add"
+                            class="rz-border-radius-6" ButtonStyle="ButtonStyle.Success" Click=@( async () =>{ await
+                        AddScore(usreid,addScore); ds.Close();} )>
+                        </RadzenButton>
+                    </RadzenStack>
+                </RadzenStack>
+            );
+    }
+
+
+
+}

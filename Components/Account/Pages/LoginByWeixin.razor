@@ -1,0 +1,111 @@
+﻿@page "/account/loginbyweixin/{code}"
+
+@using Microsoft.AspNetCore.Mvc
+@using System.ComponentModel.DataAnnotations
+@using ScorerApp.Components.Account
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using ScorerApp.Data
+@using System.Text.Json
+@using System.Web
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> userManager
+@inject IUserStore<ApplicationUser> userStore
+
+@inject ILogger<LoginByWeixin> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+@inject UserService userService
+
+<PageTitle>微信登录</PageTitle>
+<div>
+    @Message
+</div>
+
+
+@code {
+    private string? Message;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [Parameter]
+    public string? code { get; set; }
+
+
+
+
+    #region 微信小程序登录
+    //微信小程序登录
+    // 这种方式是通过微信的code获取微信的OpenID，然后根据OpenID查找用户，如果用户存在，则直接登录，如果用户不存在，则直接注册，再登录。
+    protected override async Task OnInitializedAsync()
+    {
+        // Clear the existing external cookie to ensure a clean login process
+        await SignInManager.SignOutAsync();
+
+        if (string.IsNullOrEmpty(code))
+        {
+            Message = "Code=15000, 微信登录失败";
+            return;
+        }
+
+        var openiId = await userService.GetOpenId(code);
+        if (string.IsNullOrEmpty(openiId))
+        {
+            Message = "Code=15000, 微信登录失败";
+            return;
+        }
+
+
+        //根据微信OpenID查是否存在用户，如果用户存在,则直接登录
+        var checkUser = await userManager.FindByNameAsync(openiId);
+        if (checkUser is not null)
+        {
+            await SignInManager.SignInAsync(checkUser, isPersistent: true);
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+
+        //如果用户不存在，则直接注册，再登录。
+        //注册后需要将openid保存到用户的UserName中
+        //后台处理好，需要将openid返给前端，用于处理获取头像和昵称
+        else
+        {
+            var user = CreateUser();
+            user.WeixinOpenId = openiId;
+            await userStore.SetUserNameAsync(user, openiId, CancellationToken.None);
+
+            //创建用户
+            var registerUser = await userManager.CreateAsync(user, openiId + "scorer");
+            if (!registerUser.Succeeded)
+            {
+                Message = "Code=16000, 微信登录失败";
+                return;
+            }
+
+            Logger.LogInformation("User created a new account with password.");
+            await SignInManager.SignInAsync(user, isPersistent: true);
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+    }
+
+    #endregion
+
+
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"登录失败 '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}'");
+        }
+    }
+}
+

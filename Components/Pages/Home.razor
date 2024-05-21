@@ -1,0 +1,113 @@
+﻿@page "/"
+
+@inject NavigationManager navigationManager
+@inject RoomService roomService
+@inject UserManager<ApplicationUser> userManager
+@attribute [Authorize]
+@inject DialogService dialogService
+
+<div class="row flex justify-content-center">
+	<div class="col-md-6">
+		<MyComponent my="my"/>
+
+		<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Icon="add" class="rz-border-radius-6 rz-my-1"
+					  Click="@OpenDialog"
+					  Text="新建一个记分器" ButtonStyle="ButtonStyle.Info" style="width:100%" />
+	
+@* 			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Secondary" ButtonStyle="ButtonStyle.Secondary" style="width:100%" />				
+			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Success" ButtonStyle="ButtonStyle.Success" style="width:100%" /> *@
+	
+	
+		<h4 style="padding-top:30px">.我参与的活动</h4>
+		@if (rooms.Count > 0)
+		{
+			<table class="table text-white">
+				<thead>
+					<tr>
+						<th>创建时间</th>
+						<th>代码</th>
+						<th>密码</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var room in rooms)
+					{
+						<tr>
+							<td>@room.CreateTime</td>
+							<td>@room.Code</td>
+							<td>@room.Secret</td>
+							<td>
+								<RadzenButton Shade="Shade.Dark" Variant="Variant.Filled" Click="@(()=>Go(room.Id!))"
+											  class="rz-border-radius-6 justify-content-center "
+											  ButtonStyle="ButtonStyle.Info">
+									<b>进入</b>
+								</RadzenButton>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+	</div>
+</div>
+
+
+
+@code {
+	private List<Room> rooms = new();
+	private MyInfo my = new();
+
+	[CascadingParameter]
+	private Task<AuthenticationState>? authenticationState { get; set; }
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+
+		if (authenticationState is not null)
+		{
+			var authState = await authenticationState;
+			var user = authState?.User;
+
+			if (user?.Identity is not null && user.Identity.IsAuthenticated)
+			{			
+				var u = await userManager.GetUserAsync(user);
+				if (u == null) return;
+				my.HeadImgUrl =u.HeadImgUrl;
+				my.NickName = u.NickName;
+				my.UserId = u.Id;
+				my.UserName = u.UserName;
+
+				//查询参与过的活动
+				var result = await roomService.GetPlayerJoinRooms(my.UserId);
+				if (result is not null)
+					rooms = result.Select(p => new Room()
+						{
+							Id = p.RoomId,
+							Code = p.Room!.Code,
+							CreateTime = p.Room.CreateTime,
+							Secret = p.Room.Secret,
+							Description = p.Room.Description,
+						}).OrderByDescending(p => p.CreateTime)
+						.ToList();
+			}
+		}
+	}
+
+
+	private void Go(string scorerId)
+	{
+		navigationManager.NavigateTo($"/room/{scorerId}", true);
+	}
+
+	public async Task OpenDialog()
+	{
+		//await dialogService.OpenAsync<ExpItemDialog>("Create ExpItem");
+		await dialogService.OpenAsync<CreatRoom>("");
+	}
+
+	
+
+}

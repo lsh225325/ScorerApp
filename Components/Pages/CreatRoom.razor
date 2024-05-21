@@ -1,0 +1,79 @@
+﻿@page "/createroom"
+@inject RoomService roomService
+@inject CaptchaService captchaService
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+
+
+<PageTitle>创建</PageTitle>
+
+<AuthorizeView>
+	<div class="row justify-content-center" style="height:300px">
+		<div class="col-md-6 align-content-center">
+			<h1>创建记分器</h1>
+			<div class="form-floating mb-3">
+				<RadzenTextBox Placeholder="密码，不输留空..." @bind-Value="secret" class="w-100" Style="height:50px" />
+			</div>
+			<div>
+				<RadzenButton Shade="Shade.Dark" Variant="Variant.Outlined" Click="@Create"
+							  Size="ButtonSize.Large" Icon="check_circle" Text="创建"
+							  ButtonStyle="ButtonStyle.Success" class="rz-border-radius-6 justify-content-center " style="width:100%">
+				</RadzenButton>
+
+			</div>
+		</div>
+	</div>
+</AuthorizeView>
+
+
+<style>
+	html, body {
+		background-color: #b0c4de;
+	}
+</style>
+
+@code {
+
+	private string userId=string.Empty;
+	private string secret = string.Empty;
+
+	[CascadingParameter]
+	private Task<AuthenticationState>? authenticationState { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (authenticationState is not null)
+		{
+			var authState = await authenticationState;
+			var user = authState?.User;
+			if (user?.Identity is not null && user.Identity.IsAuthenticated)
+			{
+				userId = user.FindFirstValue(ClaimTypes.NameIdentifier)!;
+			}
+		}
+	}
+
+
+	private async Task Create()
+	{
+		var room = new Room()
+			{
+				Id = Guid.NewGuid().ToString(),
+				CreateUserId = userId,
+				Secret = secret
+			};
+
+
+		do
+		{
+			room.Code = captchaService.GenerateCodeAsync();
+		}
+		while (await roomService.GetRoomByCode(room.Code) is not null);
+
+		await roomService.CreateRoomAsync(room);
+		await roomService.JoinGame(room.Id, userId);
+		navigationManager.NavigateTo($"/room/{room.Id}", true);
+	}
+}
