@@ -68,7 +68,7 @@
 
 		do
 		{
-			room.Code = captchaService.GenerateCodeAsync();
+			room.Code = captchaService.GenerateNuberCodeAsync();
 		}
 		while (await roomService.GetRoomByCode(room.Code) is not null);
 

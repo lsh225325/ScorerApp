@@ -1,0 +1,86 @@
+﻿@page "/updatenickname"
+
+@using ScorerApp.Components.Account
+@attribute [Authorize]
+@inject UserService userService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>更新名称</PageTitle>
+
+<AuthorizeView>
+    <div class="row justify-content-center" style="height:300px">
+        <div class="col-md-6 align-content-center">
+            <h1>请更新昵称</h1>
+            <h5 class="text-danger">@errorMsg</h5>
+            <div class="form-floating mb-3">
+                <RadzenTextBox Placeholder="请录入昵称" @bind-Value="nickName" class="w-100" Style="height:50px" />
+            </div>
+            <div>
+                <RadzenButton Shade="Shade.Dark" Variant="Variant.Outlined" Click="@Update"
+                              Size="ButtonSize.Large" Icon="check_circle" Text="保存"
+                              ButtonStyle="ButtonStyle.Success" class="rz-border-radius-6 justify-content-center " style="width:100%">
+                </RadzenButton>
+
+            </div>
+        </div>
+    </div>
+</AuthorizeView>
+
+
+<style>
+    html, body {
+        background-color: #b0c4de;
+    }
+</style>
+
+
+
+@code {
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+
+    private string nickName = string.Empty;
+    private string errorMsg = "";
+    public string userId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                userId = user.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            }
+        }
+    }
+
+
+    private async Task Update()
+    {
+        if (string.IsNullOrEmpty(nickName) || nickName.Length < 2)
+        {
+            errorMsg = "至少输入两个字";
+            return;
+        }
+
+        if(string.IsNullOrEmpty(userId))
+        {
+            errorMsg = "注册用户出错了";
+            return;
+        }
+
+        await userService.UpdateNickName(userId, nickName);
+        errorMsg = "";
+        navigationManager.NavigateTo(ReturnUrl!,true);
+    }
+
+}

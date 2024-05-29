@@ -41,6 +41,16 @@ public class UserService
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateNickName(string userId,string nickName)
+    {
+        var user=await _context.Users.Where(c=>c.Id==userId).FirstOrDefaultAsync();
+        if(user!=null)
+        {
+            user.NickName = nickName;
+            await _context.SaveChangesAsync();
+        }
+    }
+
 
     public async Task<bool> CheckUser(string openid)
     {

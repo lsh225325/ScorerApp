@@ -1,0 +1,55 @@
+﻿@page "/joingame"
+@inject RoomService roomService
+@inject NavigationManager navigationManager
+@attribute [Authorize]
+
+<PageTitle>加入</PageTitle>
+
+<AuthorizeView>
+	<div class="row justify-content-center" style="height:300px">
+		<div class="col-md-6 align-content-center">
+			<h1>输入房间号码</h1>
+			<div class="form-floating mb-3">
+				<RadzenTextBox Placeholder="输入房间号码" @bind-Value="roomCode" class="w-100" Style="height:50px" />
+			</div>
+			<div>
+				<RadzenButton Shade="Shade.Dark" Variant="Variant.Flat" Click="@Join"
+							  Size="ButtonSize.Large" Icon="check_circle" Text="进入"
+							  ButtonStyle="ButtonStyle.Info" class="rz-border-radius-6 justify-content-center " style="width:100%">
+				</RadzenButton>
+
+			</div>
+		</div>
+	</div>
+</AuthorizeView>
+
+<p class="text-danger">@errorMsg</p>
+
+<style>
+	html, body {
+		background-color: #b0c4de;
+	}
+</style>
+
+@code {
+	private string roomCode = string.Empty;
+	private string errorMsg = string.Empty;
+
+	private async Task Join()
+	{
+
+		var room = await roomService.GetRoomByCode(roomCode);
+		if(room is not null)
+		{
+			navigationManager.NavigateTo($"/room/{room.Id}", true);
+			errorMsg = "";
+		}
+		else
+		{
+			errorMsg = "房间代码不对,请重新输入";
+			return;
+		}
+
+		
+	}
+}

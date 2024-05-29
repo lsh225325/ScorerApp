@@ -1,10 +1,10 @@
 ﻿
 <div Class="rz-p-0 ">
-	<RadzenCard Variant="Variant.Flat" Class="rz-my-6 rz-mx-auto">
+	<RadzenCard Variant="Variant.Flat" Class="rz-my-6 rz-mx-auto" Style="padding:inherit">
 		<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceAround" Gap="1rem" Class="rz-p-4">	
 			<RadzenStack Gap="0">
 				<RadzenImage Path="@my.HeadImgUrl" Style="width: 100px; height: 100px; border-radius: 50%;" />
-				<RadzenText TextStyle="TextStyle.Subtitle1"  class="text-center"><b>@(my?.UserName + " " + my?.NickName)</b></RadzenText>
+				<RadzenText TextStyle="TextStyle.Subtitle1" class="text-center"><b>@(string.IsNullOrEmpty(my?.NickName)? my?.UserName : my?.NickName)</b></RadzenText>
 			</RadzenStack>
 			<RadzenStack Gap="0">
 				<RadzenText TextStyle="TextStyle.Subtitle1">得分</RadzenText>

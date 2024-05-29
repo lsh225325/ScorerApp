@@ -1,18 +1,23 @@
-﻿@page "/"
+﻿@page "/home"
 
 @inject NavigationManager navigationManager
 @inject RoomService roomService
 @inject UserManager<ApplicationUser> userManager
-@attribute [Authorize]
 @inject DialogService dialogService
+@inject CaptchaService captchaService
+
+@attribute [Authorize]
 
 <div class="row flex justify-content-center">
 	<div class="col-md-6">
-		<MyComponent my="my"/>
+		<MyComponent my=my />
 
 		<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Icon="add" class="rz-border-radius-6 rz-my-1"
-					  Click="@OpenDialog"
-					  Text="新建一个记分器" ButtonStyle="ButtonStyle.Info" style="width:100%" />
+					  Click="@CreatRoom"
+					  Text="新建一个房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
+		<RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" Icon="add" class="rz-border-radius-6 rz-my-1"
+					  Click="@JoinGameDialog"
+					  Text="加入房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
 	
 @* 			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Secondary" ButtonStyle="ButtonStyle.Secondary" style="width:100%" />				
 			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Success" ButtonStyle="ButtonStyle.Success" style="width:100%" /> *@
@@ -26,7 +31,6 @@
 					<tr>
 						<th>创建时间</th>
 						<th>代码</th>
-						<th>密码</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -36,7 +40,6 @@
 						<tr>
 							<td>@room.CreateTime</td>
 							<td>@room.Code</td>
-							<td>@room.Secret</td>
 							<td>
 								<RadzenButton Shade="Shade.Dark" Variant="Variant.Filled" Click="@(()=>Go(room.Id!))"
 											  class="rz-border-radius-6 justify-content-center "
@@ -51,7 +54,6 @@
 		}
 	</div>
 </div>
-
 
 
 @code {
@@ -102,10 +104,29 @@
 		navigationManager.NavigateTo($"/room/{scorerId}", true);
 	}
 
-	public async Task OpenDialog()
+	public async Task CreatRoom()
 	{
-		//await dialogService.OpenAsync<ExpItemDialog>("Create ExpItem");
-		await dialogService.OpenAsync<CreatRoom>("");
+		var room = new Room()
+			{
+				Id = Guid.NewGuid().ToString(),
+				CreateUserId = my.UserId!
+			};
+
+
+		do
+		{
+			room.Code = captchaService.GenerateNuberCodeAsync(7);
+		}
+		while (await roomService.GetRoomByCode(room.Code) is not null);
+
+		await roomService.CreateRoomAsync(room);
+		await roomService.JoinGame(room.Id,my.UserId!);
+		navigationManager.NavigateTo($"/room/{room.Id}", true);
+	}
+
+	public async Task JoinGameDialog()
+	{
+		await dialogService.OpenAsync<JoinGame>("");
 	}
 
 	
