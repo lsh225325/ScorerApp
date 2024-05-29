@@ -54,9 +54,22 @@ public class ScoreService
         to.RoomId = roomId;
         to.Id = Guid.NewGuid().ToString();
 
-        _context.ScoreItem.Add(my);
-        _context.ScoreItem.Add(to);
-        await _context.SaveChangesAsync();
+        //使用了事务处理来确保两个分数项要么都成功添加，要么都不添加
+        try
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                _context.ScoreItem.Add(my);
+                _context.ScoreItem.Add(to);
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+            }
+        }
+        catch (Exception ex)
+        {
+          throw new Exception("更新错误"+ex.Message);
+        }
+
     }
 
 }

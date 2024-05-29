@@ -26,4 +26,17 @@ public class CaptchaService
         return captchaBuilder.ToString();
     }
 
+	public string GenerateNuberCodeAsync(int length = 8)
+	{
+		StringBuilder captchaBuilder = new StringBuilder();
+		Random random = new Random();
+		for (int i = 0; i < length; i++)
+		{
+			int index = random.Next(chars2.Length);
+			captchaBuilder.Append(chars2[index]);
+		}
+
+		return captchaBuilder.ToString();
+	}
+
 }

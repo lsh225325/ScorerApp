@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace ScorerApp.Migrations
 {
     /// <inheritdoc />
-    public partial class UpRoomPlayer : Migration
+    public partial class addroles : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -225,7 +227,8 @@ namespace ScorerApp.Migrations
                         name: "FK_RoomPlayer_Room_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Room",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -252,7 +255,17 @@ namespace ScorerApp.Migrations
                         name: "FK_ScoreItem_Room_RoomId",
                         column: x => x.RoomId,
                         principalTable: "Room",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "43cc8e72-cc63-4f0a-b890-004a8647de40", "cfd82ba2-f8e6-4f99-97b2-e72de2213199", "manager", "MANAGER" },
+                    { "8c9ebafd-7c21-4f93-a77c-145edc334281", "5ebc46da-6e9b-4e5f-81ff-728a6c26f14f", "cust", "CUST" }
                 });
 
             migrationBuilder.CreateIndex(

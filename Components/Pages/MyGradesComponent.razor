@@ -1,0 +1,95 @@
+﻿@inject MyGradesService gradesService
+
+
+<div Class="rz-p-0 ">
+    <RadzenCard Variant="Variant.Flat" Class="rz-my-6 rz-mx-auto" Style="padding:inherit">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceAround" Gap="1rem" Class="rz-p-4">
+            <RadzenStack Gap="0">
+                <RadzenImage Path="@my.HeadImgUrl" Style="width: 80px; height: 80px; border-radius: 50%;" />
+                <RadzenText TextStyle="TextStyle.Subtitle1" class="text-center"><a href="/updatenickname">@my?.NickName</a></RadzenText>
+            </RadzenStack>
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.Subtitle1">总得分</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2"><b>@myGrades.TotalGrades</b></RadzenText>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenText class=" text-center">
+        累计参加了<a style="font-size:30px">@myGrades.GamesCount</a>  场活动
+    </RadzenText>
+
+    <RadzenCard Variant="Variant.Outlined" Style="height:220px">
+        <RadzenChart>
+            <RadzenDonutSeries Data="@totalGrades" Title="Count" CategoryProperty="Category" ValueProperty="Count" TotalAngle="180"
+                               StartAngle="180">
+                <ChildContent>
+                    <RadzenSeriesDataLabels Visible="true" />
+                </ChildContent>
+                <TitleTemplate>
+                    <div class="rz-donut-content">
+                        <div>@winer %</div>
+                        <div>胜率</div>
+                    </div>
+                </TitleTemplate>
+            </RadzenDonutSeries>
+        </RadzenChart>
+    </RadzenCard>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public MyInfo my { get; set; }
+
+    MyGrades myGrades = new();
+    DataItem[] totalGrades = [];
+    int winer = 0;
+
+
+    class DataItem
+    {
+        public string? Category { get; set; }
+        public int Count { get; set; }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (!string.IsNullOrEmpty(my.UserId))
+        {
+            myGrades = await gradesService.MyGrades(my.UserId);
+            totalGrades = new DataItem[]
+            {
+                new DataItem
+                {
+                    Category="胜",
+                    Count=myGrades.WinCount
+                },
+                new DataItem
+                {
+                    Category="负",
+                    Count=myGrades.LostCount
+                }
+            };
+
+            if (myGrades.TotalGrades > 0)
+                winer = Convert.ToInt32(Convert.ToDouble(myGrades.WinCount) / Convert.ToDouble(myGrades.GamesCount) * 100);
+        }
+
+
+
+
+    }
+
+
+
+
+
+
+
+}

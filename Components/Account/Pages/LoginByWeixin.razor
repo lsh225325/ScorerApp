@@ -14,7 +14,6 @@
 @inject IUserStore<ApplicationUser> userStore
 
 @inject ILogger<LoginByWeixin> Logger
-@inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject UserService userService
 
@@ -64,7 +63,7 @@
         {
             await SignInManager.SignInAsync(checkUser, isPersistent: true);
             Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo("/home");
         }
 
         //如果用户不存在，则直接注册，再登录。
@@ -74,6 +73,11 @@
         {
             var user = CreateUser();
             user.WeixinOpenId = openiId;
+            user.NickName = "点我修改";
+            Random random = new Random();
+            int index = random.Next(1, 20);
+            user.HeadImgUrl = string.Format("Img/{0}.png", index);
+
             await userStore.SetUserNameAsync(user, openiId, CancellationToken.None);
 
             //创建用户
@@ -88,6 +92,7 @@
             await SignInManager.SignInAsync(user, isPersistent: true);
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
+
         }
     }
 

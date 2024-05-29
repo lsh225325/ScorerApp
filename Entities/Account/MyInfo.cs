@@ -8,6 +8,6 @@ public class MyInfo
     public string? NickName { get; set; } = string.Empty;
 	public string? HeadImgUrl { get; set; }=string.Empty;
     public int Score { get; set; } = 0;
-    public DateTime? Created { get; set; }
+    public DateTime Created { get; set; }
 
 }

@@ -1,113 +1,122 @@
-﻿@page "/"
+﻿@page "/home"
 
 @inject NavigationManager navigationManager
 @inject RoomService roomService
 @inject UserManager<ApplicationUser> userManager
-@attribute [Authorize]
 @inject DialogService dialogService
+@inject CaptchaService captchaService
 
-<div class="row flex justify-content-center">
-	<div class="col-md-6">
-		<MyComponent my="my"/>
 
-		<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Icon="add" class="rz-border-radius-6 rz-my-1"
-					  Click="@OpenDialog"
-					  Text="新建一个记分器" ButtonStyle="ButtonStyle.Info" style="width:100%" />
-	
-@* 			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Secondary" ButtonStyle="ButtonStyle.Secondary" style="width:100%" />				
-			<RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Text="Success" ButtonStyle="ButtonStyle.Success" style="width:100%" /> *@
-	
-	
-		<h4 style="padding-top:30px">.我参与的活动</h4>
-		@if (rooms.Count > 0)
-		{
-			<table class="table text-white">
-				<thead>
-					<tr>
-						<th>创建时间</th>
-						<th>代码</th>
-						<th>密码</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var room in rooms)
-					{
-						<tr>
-							<td>@room.CreateTime</td>
-							<td>@room.Code</td>
-							<td>@room.Secret</td>
-							<td>
-								<RadzenButton Shade="Shade.Dark" Variant="Variant.Filled" Click="@(()=>Go(room.Id!))"
-											  class="rz-border-radius-6 justify-content-center "
-											  ButtonStyle="ButtonStyle.Info">
-									<b>进入</b>
-								</RadzenButton>
-							</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-		}
-	</div>
-</div>
+@attribute [Authorize]
 
+
+
+<AuthorizeView>
+    <div class="row flex justify-content-center">
+        <div class="col-md-6">
+            <RadzenButton Size="ButtonSize.Large" Variant="Variant.Outlined" Icon="add" class="rz-border-radius-6 rz-my-1"
+                          Click="@CreatRoom"
+                          Text="新建一个房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
+            <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" Icon="check_circle" class="rz-border-radius-6 rz-my-1"
+                          Click="@JoinGameDialog"
+                          Text="加入房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
+
+            <!---成绩统计------->
+            <MyGradesComponent my=my></MyGradesComponent>
+
+            <!---近期活动------->
+            <div style="margin-top:30px;">
+                <MyJoinGamesComponent rooms=@rooms.Where(c=>c.CreateTime>= DateTime.Now.AddMonths(-1)).ToList()></MyJoinGamesComponent>
+            </div>
+
+
+        </div>
+    </div>
+</AuthorizeView>
 
 
 @code {
-	private List<Room> rooms = new();
-	private MyInfo my = new();
-
-	[CascadingParameter]
-	private Task<AuthenticationState>? authenticationState { get; set; }
 
 
-	protected override async Task OnInitializedAsync()
-	{
-		await base.OnInitializedAsync();
+    private List<Room> rooms = new();
+    private MyInfo my = new();
 
-		if (authenticationState is not null)
-		{
-			var authState = await authenticationState;
-			var user = authState?.User;
-
-			if (user?.Identity is not null && user.Identity.IsAuthenticated)
-			{			
-				var u = await userManager.GetUserAsync(user);
-				if (u == null) return;
-				my.HeadImgUrl =u.HeadImgUrl;
-				my.NickName = u.NickName;
-				my.UserId = u.Id;
-				my.UserName = u.UserName;
-
-				//查询参与过的活动
-				var result = await roomService.GetPlayerJoinRooms(my.UserId);
-				if (result is not null)
-					rooms = result.Select(p => new Room()
-						{
-							Id = p.RoomId,
-							Code = p.Room!.Code,
-							CreateTime = p.Room.CreateTime,
-							Secret = p.Room.Secret,
-							Description = p.Room.Description,
-						}).OrderByDescending(p => p.CreateTime)
-						.ToList();
-			}
-		}
-	}
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
 
 
-	private void Go(string scorerId)
-	{
-		navigationManager.NavigateTo($"/room/{scorerId}", true);
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
 
-	public async Task OpenDialog()
-	{
-		//await dialogService.OpenAsync<ExpItemDialog>("Create ExpItem");
-		await dialogService.OpenAsync<CreatRoom>("");
-	}
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
 
-	
+
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                var u = await userManager.GetUserAsync(user);
+                if (u?.Id == null || string.IsNullOrEmpty(u.Id)||string.IsNullOrEmpty(u.UserName))
+                {
+                    navigationManager.NavigateTo("/Account/Login", true);
+                }
+
+             
+                my.HeadImgUrl = u.HeadImgUrl;
+                my.NickName = u.NickName;
+                my.UserId = u.Id;
+                my.UserName = u.UserName;
+
+                if (string.IsNullOrEmpty(my.NickName) || my.NickName == "点我修改")
+                    navigationManager.NavigateTo($"/updatenickname", true);
+
+
+                //查询参与过的活动
+                var result = await roomService.GetPlayerJoinRooms(my.UserId);
+                if (result is not null)
+                    rooms = result.Select(p => new Room()
+                        {
+                            Id = p.RoomId,
+                            Code = p.Room!.Code,
+                            CreateTime = p.Room.CreateTime,
+                            Secret = p.Room.Secret,
+                            Description = p.Room.Description,
+                        }).OrderByDescending(p => p.CreateTime)
+                        .ToList();
+            }
+        }
+    }
+
+
+
+
+    public async Task CreatRoom()
+    {
+        var room = new Room()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreateUserId = my.UserId!
+            };
+
+        do
+        {
+            room.Code = captchaService.GenerateNuberCodeAsync(7);
+        }
+        while (await roomService.GetRoomByCode(room.Code) is not null);
+
+        await roomService.CreateRoomAsync(room);
+        await roomService.JoinGame(room.Id, my.UserId!);
+        navigationManager.NavigateTo($"/room/{room.Id}", true);
+    }
+
+    public async Task JoinGameDialog()
+    {
+        await dialogService.OpenAsync<JoinGame>("");
+    }
+
+
 
 }

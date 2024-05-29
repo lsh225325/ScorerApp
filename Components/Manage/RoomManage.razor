@@ -1,0 +1,69 @@
+﻿@page "/manage/room"
+@attribute [Authorize]
+@inject ManageService service
+
+<AuthorizeView Roles="manager">
+
+    <PageTitle>RoomManage</PageTitle>
+    <h3>RoomList</h3>
+
+    <div class="row flex justify-content-center">
+        @if (rooms?.Length > 0)
+        {
+            <table class="table text-white">
+                <thead>
+                    <tr>
+                        <th>all</th>
+                        <th>code</th>
+                        <th>date</th>
+                        <th>playerCount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in rooms)
+                    {
+                        <tr>
+                            <td> <InputCheckbox @bind-Value="@room.Select"></InputCheckbox>  </td>
+                            <td>@room.Code</td>
+                            <td>@room.CreatTime.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture)</td>
+                            <td>@room.Count</td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    <button type="button" class="btn btn-info" @onclick="@(()=>Look(0))">删除All</button>
+    <button type="button" class="btn btn-info" @onclick="@(()=>Look(-1))">删除1月前的</button>
+    <button type="button" class="btn btn-info" @onclick="@(()=>Look(-3))">删除3月前的</button>
+    <button type="button" class="btn btn-info" @onclick="@(()=>Look(-6))">删除6月前的</button>
+    <p>@deletCount</p>
+</AuthorizeView>
+
+
+
+
+@code {
+    NoPlayerRooms[]? rooms;
+    int deletCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        rooms = await service.GetNoPlayerRooms();
+    }
+
+
+    private async void Look(int month=-1)
+    {
+        if (rooms is null || rooms.Length < 1) return;
+        var items = rooms.Where(c => c.Select == true &&c.CreatTime<DateTime.Now.AddMonths(month)).Select(o => o.Id).ToList();
+        if (items.Count < 1) return;
+        deletCount = await service.RemoveRooms(items!);
+        rooms = await service.GetNoPlayerRooms();
+        StateHasChanged();
+
+    }
+
+}

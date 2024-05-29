@@ -26,7 +26,6 @@ public class RoomService
             .FirstOrDefaultAsync(s => s.Code == code);
     }
 
-
     public async Task<List<Room>> GetRoomsByUserAsync(string userId)
     {
         return await _context.Room
@@ -60,7 +59,6 @@ public class RoomService
         await _hubContext.Clients.All.SendAsync("SendMessage");
     }
 
-
     public async Task<List<RoomPlayer>> GetPlayersByRoom(string roomId)
     {
         return await _context.RoomPlayer
@@ -69,7 +67,6 @@ public class RoomService
             .AsNoTracking()
             .ToListAsync();
     }
-
 
     public async Task<List<RoomPlayer>> GetPlayerJoinRooms(string playerId)
     {

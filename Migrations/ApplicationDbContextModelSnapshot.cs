@@ -15,7 +15,7 @@ namespace ScorerApp.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -41,6 +41,22 @@ namespace ScorerApp.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "43cc8e72-cc63-4f0a-b890-004a8647de40",
+                            ConcurrencyStamp = "cfd82ba2-f8e6-4f99-97b2-e72de2213199",
+                            Name = "manager",
+                            NormalizedName = "MANAGER"
+                        },
+                        new
+                        {
+                            Id = "8c9ebafd-7c21-4f93-a77c-145edc334281",
+                            ConcurrencyStamp = "5ebc46da-6e9b-4e5f-81ff-728a6c26f14f",
+                            Name = "cust",
+                            NormalizedName = "CUST"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -402,7 +418,8 @@ namespace ScorerApp.Migrations
                 {
                     b.HasOne("ScorerApp.Room", "Room")
                         .WithMany("RoomPlayers")
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("ScorerApp.Data.ApplicationUser", "User")
                         .WithMany()
@@ -421,7 +438,8 @@ namespace ScorerApp.Migrations
 
                     b.HasOne("ScorerApp.Room", "Room")
                         .WithMany("ScoreItems")
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("FromUser");
 

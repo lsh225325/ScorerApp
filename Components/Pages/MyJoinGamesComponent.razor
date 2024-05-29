@@ -1,0 +1,48 @@
+﻿@using System.Globalization
+@inject NavigationManager navigationManager
+
+<RadzenText class=" text-center">
+    近期的活动
+</RadzenText>
+
+@if (rooms.Count > 0)
+{
+    <table class="table text-white">
+        <thead>
+            <tr>
+                <th>创建时间</th>
+                <th>房间代码</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in rooms)
+            {
+                <tr>
+                    <td class="align-content-center">@room.CreateTime.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture)</td>
+                    <td class="align-content-center">@room.Code</td>
+                    <td>
+                        <RadzenButton Variant="Variant.Flat"  class="rz-border-radius-6 rz-my-1"
+                                      Click="@(()=>Goto(room.Id!))"
+                                      Text="加入房间" ButtonStyle="ButtonStyle.Info" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+
+
+@code {
+    [Parameter]
+    public List<Room> rooms { get; set; }
+
+    private void Goto(string roomid)
+    {
+        navigationManager.NavigateTo($"/room/{roomid}", true);
+    }
+
+}

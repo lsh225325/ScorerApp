@@ -44,6 +44,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     options.Lockout.MaxFailedAccessAttempts = 10;//失败锁定次数
     options.Lockout.AllowedForNewUsers = false;//锁定新用户
 })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -53,6 +54,8 @@ builder.Services.AddScoped<RoomService>();
 builder.Services.AddScoped<ScoreService>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<MyGradesService>();
+builder.Services.AddScoped<ManageService>();
 
 
 

@@ -1,4 +1,5 @@
-﻿<div class="flex-column justify-content-center ">
+﻿
+<div class="flex-column justify-content-center ">
 	<h5 class="text-white text-lg-center " style=""><b>.记分记录</b></h5>
 </div>
 
@@ -12,7 +13,7 @@
 					<tr>
 						<th>记分</th>
 						<th>时间</th>
-						<th>-给谁/+来自谁</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -20,8 +21,8 @@
 					{
 						<tr>
 							<td>@item.Score</td>
-							<td>@item.CreateTime</td>
-							<td>@(item.Score < 0 ? "给" : "来自")  @item.FromUser!.UserName  </td>
+							<td>@item.CreateTime.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture)</td>
+							<td>@(item.Score < 0 ? "给" : "来自")  @item.FromUser!.NickName  </td>
 						</tr>
 					}
 				</tbody>
