@@ -1,0 +1,99 @@
+﻿@inject ScoreService scoreService
+@implements IAsyncDisposable
+@attribute [Authorize]
+@using Microsoft.AspNetCore.SignalR.Client
+
+<AuthorizeView>
+    <RadzenStack>
+        <div class="row  justify-content-center align-content-center">
+            <div class="row  justify-content-between">
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="1" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=1;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="2" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=2;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="3" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=3;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="4" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=4;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="5" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=5;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="6" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=6;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="7" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=7;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="8" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=8;} )>
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Outlined" Style="width:30%;margin-top:10px" Text="9" Size="ButtonSize.Large"
+                              class="rz-border-radius-4" ButtonStyle="ButtonStyle.Success" Click=@(()=>{ addScore=9;} )>
+                </RadzenButton>
+            </div>
+        </div>
+
+        <div class="flex-column justify-content-lg-center">
+            <a class="text-center">自定给分</a>
+            <RadzenNumeric Min="1" Max="1000" @bind-Value=@addScore class="text-center" Style="width:80%;height:50px;" />
+        </div>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center"
+                     JustifyContent="JustifyContent.Center">
+            <RadzenButton Variant="Variant.Flat" Style="width:100%" Text="给分" Size="ButtonSize.Large" Icon="add"
+                          class="rz-border-radius-6" ButtonStyle="ButtonStyle.Success" Click=@AddScore>
+            </RadzenButton>
+        </RadzenStack>
+    </RadzenStack>
+</AuthorizeView>
+
+
+
+
+
+@code {
+    [Parameter] public string userId { get; set; } = string.Empty;
+    [Parameter] public string roomId { get; set; } = string.Empty;
+    [Parameter] public string fromUserId { get; set; } = string.Empty;
+    private int addScore = 0;
+
+    private HubConnection? hubConnection;
+
+
+    private async Task AddScore()
+    {
+        //检查用户名，房间，对方用户id，全部都不能为空
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(roomId) || string.IsNullOrEmpty(fromUserId))
+            return;
+
+        // 检查分数是否合法,范围1-10000
+        if (addScore < 1 || addScore > 10000) return;
+
+        // 检查用户是否是当前用户，防止自己给自己加分
+        if (fromUserId == userId) return;
+
+        // 添加分数，确保在数据库层面进行适当的参数化查询以防止 SQL 注入攻击
+        await scoreService.AddScore(userId, roomId, addScore, fromUserId);
+
+        // 发送消息通知其他客户端更新
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage");
+        }
+
+        // 触发 UI 更新
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
