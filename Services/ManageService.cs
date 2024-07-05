@@ -28,13 +28,11 @@ public class ManageService
         return items;
     }
 
-    public async Task<int> RemoveRooms(List<string> rooms)
-    {
 
-       return await _context.Room.Where(c => rooms.Contains(c.Id)).ExecuteDeleteAsync();
- 
-        
-          
+    // 移除房间[]
+    public async Task<int> RemoveRooms(List<string> roomIds)
+    {
+       return await _context.Room.Where(c => roomIds.Contains(c.Id)).ExecuteDeleteAsync();     
     }
 
    

@@ -1,4 +1,4 @@
-global using ScorerApp.Data; 
+global using ScorerApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +48,18 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+
+//设置cookie过期时间
+builder.Services.ConfigureApplicationCookie(op =>
+{
+    //设置登录后60天才过期
+    op.ExpireTimeSpan = TimeSpan.FromDays(60);
+
+    //启用滑动过期，60天登录后，每访问一次，则自动延长60天
+    op.SlidingExpiration = true;
+});
+
+
 
 builder.Services.AddScoped<CaptchaService>();
 builder.Services.AddScoped<RoomService>();
