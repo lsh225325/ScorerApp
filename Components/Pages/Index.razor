@@ -1,9 +1,10 @@
 ﻿@page "/"
 
 @inject NavigationManager navigationManager
+@inject DialogService dialogService
+
 
 <PageTitle>好手气打牌记分</PageTitle>
-
 
 <div class="row flex justify-content-center">
     <div class="col-md-6">
@@ -11,19 +12,19 @@
 
         <div class=" row text-center align-content-center justify-content-center" style="height:250px">
             <a href="/home" style="text-decoration:none">
-                <RadzenImage Path="./logo400.png" Style="width: 300px;" />
-                <h2>打牌记分系统</h2>
+                <RadzenImage Path="./logo400.png" Style="width: 300px;" />            
             </a>
+            <h2>打牌记分系统</h2>
         </div>
 
         <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" class="rz-border-radius-3 rz-my-1"
                       Icon="add"
                       Text="新建一个房间"
-                      Click="@(()=>Goto("createroom"))"
+                      Click="@CreateRoom"
                       ButtonStyle="ButtonStyle.Info" style="width:100%;height:100px;">
         </RadzenButton>
         <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" Icon="check_circle" class="rz-border-radius-3 rz-my-5"
-                      Click="@(()=>Goto("joingame"))"
+                      Click="@JoinGame"
                       Text="加入房间" ButtonStyle="ButtonStyle.Success" style="width:100%;height:100px;" />
 
     </div>
@@ -33,10 +34,14 @@
 
 @code {
 
-
-    private void Goto(string page)
+    private async Task CreateRoom()
     {
-        navigationManager.NavigateTo($"/{page}", true);
+        await dialogService.OpenAsync<CreatRoom>("");
+    }
+
+    private async Task JoinGame()
+    {
+        await dialogService.OpenAsync<JoinGame>("");
     }
 
 }

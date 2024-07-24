@@ -11,10 +11,10 @@
 <AuthorizeView>
     <div class="row justify-content-center" style="height:300px">
         <div class="col-md-6 align-content-center">
-            <h1>请更新昵称</h1>
+            <h1 class="text-center">请更新昵称</h1>
             <h5 class="text-danger">@errorMsg</h5>
             <div class="form-floating mb-3">
-                <RadzenTextBox Placeholder="请录入昵称" @bind-Value="nickName" class="w-100" Style="height:50px" />
+                <RadzenTextBox Placeholder="请录入昵称" @bind-Value="nickName" class="w-100 text-center" Style="height:50px" />
             </div>
             <div>
                 <RadzenButton Shade="Shade.Dark" Variant="Variant.Outlined" Click="@Update"
