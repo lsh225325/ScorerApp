@@ -1,0 +1,42 @@
+﻿@page "/CreateViewShareWay"
+
+<h3>房间分享方法</h3>
+
+<div class="row justify-content-center" style="height:300px">
+    <div class="col-md-6 align-content-center">
+        <h1 class="text-center">选择一种方法邀请朋友进入房间</h1>
+        <div class="form-floating mb-3" style="margin-top:50px">
+            《邀请方式》
+            <select class="form-select" aria-label="Default select example" @onchange="ChangeShareWay">
+                <option value="0">链接</option>
+                <option value="1">二维码</option>
+            </select>
+            <ul>
+                <li>
+                    <a href="https://www.baidu.com">链接</a>
+                </li>
+                <li>
+                    <a>
+                        向朋友发送链接
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        向朋友发送二维码
+                    </a>
+                </li>
+            </ul>
+
+        </div>
+
+    </div>
+</div>
+
+
+@code {
+    private void ChangeShareWay()
+    {
+        
+    }
+
+}

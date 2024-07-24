@@ -42,7 +42,7 @@
     private Task<AuthenticationState>? authenticationState { get; set; }
 
     protected override async Task OnInitializedAsync()
-    {
+    {      
         if (authenticationState is not null)
         {
             var authState = await authenticationState;
@@ -51,6 +51,11 @@
             {
                 userId = user.FindFirstValue(ClaimTypes.NameIdentifier)!;
             }
+        }
+
+        if(string.IsNullOrEmpty(userId))
+        {
+            navigationManager.NavigateTo("/Account/Login", true);
         }
     }
 
@@ -87,6 +92,6 @@
 
         await roomService.CreateRoomAsync(room);
         await roomService.JoinGame(room.Id, userId);
-        navigationManager.NavigateTo($"/room/{room.Id}", true);
+        navigationManager.NavigateTo($"/room/{room.Id}/create", true);
     }
 }

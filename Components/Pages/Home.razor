@@ -5,11 +5,9 @@
 @inject UserManager<ApplicationUser> userManager
 @inject DialogService dialogService
 @inject CaptchaService captchaService
-
-
 @attribute [Authorize]
 
-
+<PageTitle>好手气打牌记分</PageTitle>
 
 <AuthorizeView>
     <div class="row flex justify-content-center">
@@ -18,7 +16,7 @@
                           Click="@CreatRoom"
                           Text="新建一个房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
             <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" Icon="check_circle" class="rz-border-radius-6 rz-my-1"
-                          Click="@JoinGameDialog"
+                          Click="@JoinGame"
                           Text="加入房间" ButtonStyle="ButtonStyle.Info" style="width:100%" />
 
             <!---成绩统计------->
@@ -29,7 +27,6 @@
                 <MyJoinGamesComponent rooms=@rooms.Where(c=>c.CreateTime>= DateTime.Now.AddMonths(-1)).ToList()></MyJoinGamesComponent>
             </div>
 
-
         </div>
     </div>
 </AuthorizeView>
@@ -37,13 +34,11 @@
 
 @code {
 
-
     private List<Room> rooms = new();
     private MyInfo my = new();
 
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationState { get; set; }
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,12 +54,11 @@
             if (user?.Identity is not null && user.Identity.IsAuthenticated)
             {
                 var u = await userManager.GetUserAsync(user);
-                if (u?.Id == null || string.IsNullOrEmpty(u.Id)||string.IsNullOrEmpty(u.UserName))
+                if (u?.Id == null || string.IsNullOrEmpty(u.Id) || string.IsNullOrEmpty(u.UserName))
                 {
                     navigationManager.NavigateTo("/Account/Login", true);
                 }
 
-             
                 my.HeadImgUrl = u.HeadImgUrl;
                 my.NickName = u.NickName;
                 my.UserId = u.Id;
@@ -72,7 +66,6 @@
 
                 if (string.IsNullOrEmpty(my.NickName) || my.NickName == "点我修改")
                     navigationManager.NavigateTo($"/updatenickname", true);
-
 
                 //查询参与过的活动
                 var result = await roomService.GetPlayerJoinRooms(my.UserId);
@@ -90,33 +83,14 @@
         }
     }
 
-
-
-
     public async Task CreatRoom()
     {
-        var room = new Room()
-            {
-                Id = Guid.NewGuid().ToString(),
-                CreateUserId = my.UserId!
-            };
-
-        do
-        {
-            room.Code = captchaService.GenerateNuberCodeAsync(7);
-        }
-        while (await roomService.GetRoomByCode(room.Code) is not null);
-
-        await roomService.CreateRoomAsync(room);
-        await roomService.JoinGame(room.Id, my.UserId!);
-        navigationManager.NavigateTo($"/room/{room.Id}", true);
+        await dialogService.OpenAsync<CreatRoom>("");
     }
 
-    public async Task JoinGameDialog()
+    public async Task JoinGame()
     {
         await dialogService.OpenAsync<JoinGame>("");
     }
-
-
 
 }

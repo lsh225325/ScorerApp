@@ -85,6 +85,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ScorerDB.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="ScorerDB.db-shm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
