@@ -10,15 +10,15 @@
 <PageTitle>创建房间</PageTitle>
 
 <AuthorizeView>
-    <div class="row justify-content-center" style="height:300px">
+    <div class="row justify-content-center" style="height:350px">
         <div class="col-md-6 align-content-center">
             <h1 class="text-center">创建房间</h1>
-            <div class="form-floating mb-3" style="margin-top:50px">
+            <div class="form-floating mb-3" style="margin-top:70px">
                 <RadzenTextBox Placeholder="密码，不输留空..." @bind-Value="secret" class="w-100 text-center" Style="height:50px" />
             </div>
-            <div class="form-floating mb-3" style="margin-top:50px">
+            <div class="form-floating mb-3" style="margin-top:70px">
                 <RadzenButton Shade="Shade.Dark" Variant="Variant.Flat" Click="@Create"
-                              Size="ButtonSize.Large" Icon="check_circle" Text="创建"
+                              Size="ButtonSize.Large" Icon="add" Text="创建"
                               ButtonStyle="ButtonStyle.Info" class="rz-border-radius-6 justify-content-center " style="width:100%">
                 </RadzenButton>
             </div>
@@ -27,11 +27,6 @@
     </div>
 </AuthorizeView>
 
-<style>
-    html, body {
-        background-color: #b0c4de;
-    }
-</style>
 
 @code {
 

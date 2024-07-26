@@ -5,7 +5,7 @@
     <RadzenCard Variant="Variant.Flat" Class="rz-my-6 rz-mx-auto" Style="padding:inherit">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceAround" Gap="1rem" Class="rz-p-4">
             <RadzenStack Gap="0">
-                <RadzenImage Path="@my.HeadImgUrl" Style="width: 80px; height: 80px; border-radius: 50%;" />
+                <RadzenImage Path="@my.HeadImgUrl" Style="width: 60px; height: 60px; border-radius: 50%;" />
                 <RadzenText TextStyle="TextStyle.Subtitle1" class="text-center"><a href="/updatenickname">@my?.NickName</a></RadzenText>
             </RadzenStack>
             <RadzenStack Gap="0">
@@ -38,10 +38,9 @@
 </div>
 
 
-
 @code {
     [Parameter]
-    public MyInfo my { get; set; }
+    public MyInfo my { get; set; } = new();
 
     MyGrades myGrades = new();
     DataItem[] totalGrades = [];
@@ -53,7 +52,6 @@
         public string? Category { get; set; }
         public int Count { get; set; }
     }
-
 
 
     protected override async Task OnInitializedAsync()
@@ -80,9 +78,6 @@
             if (myGrades.TotalGrades > 0)
                 winer = Convert.ToInt32(Convert.ToDouble(myGrades.WinCount) / Convert.ToDouble(myGrades.GamesCount) * 100);
         }
-
-
-
 
     }
 

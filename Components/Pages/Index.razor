@@ -3,29 +3,25 @@
 @inject NavigationManager navigationManager
 @inject DialogService dialogService
 
-
-<PageTitle>好手气打牌记分</PageTitle>
+<PageTitle>好手气·打牌记分</PageTitle>
 
 <div class="row flex justify-content-center">
     <div class="col-md-6">
-
-
         <div class=" row text-center align-content-center justify-content-center" style="height:250px">
             <a href="/home" style="text-decoration:none">
                 <RadzenImage Path="./logo400.png" Style="width: 300px;" />
             </a>
-            <h2>打牌记分系统</h2>
+            <h2>好手气·打牌记分</h2>
         </div>
-
-        <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" class="rz-border-radius-3 rz-my-1"
-                      Icon="add"
+        <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Info"
+                      Icon="add" class="rz-border-radius-10 rz-my-1" style="width:100%;height:100px;"
                       Text="新建一个房间"
-                      Click="@CreateRoom"
-                      ButtonStyle="ButtonStyle.Info" style="width:100%;height:100px;">
-        </RadzenButton>
-        <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" Icon="check_circle" class="rz-border-radius-3 rz-my-5"
-                      Click="@JoinGame"
-                      Text="加入房间" ButtonStyle="ButtonStyle.Success" style="width:100%;height:100px;" />
+                      Click="@CreateRoom" />
+
+        <RadzenButton Size="ButtonSize.Large" Variant="Variant.Flat" ButtonStyle="ButtonStyle.Success"
+                      Icon="check_circle" class="rz-border-radius-10 rz-my-1" style="width:100%;height:100px;"
+                      Text="加入房间"
+                      Click="@JoinGame" />
 
     </div>
 </div>
@@ -35,7 +31,7 @@
 
     private async Task CreateRoom()
     {
-        await dialogService.OpenAsync<CreatRoom>("");
+        await dialogService.OpenAsync<CreatRoom>("");        
     }
 
     private async Task JoinGame()

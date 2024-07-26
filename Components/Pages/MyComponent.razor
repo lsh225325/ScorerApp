@@ -1,21 +1,20 @@
-﻿
-<div Class="rz-p-0 ">
-	<RadzenCard Variant="Variant.Flat" Class="rz-my-6 rz-mx-auto" Style="padding:inherit">
-		<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceAround" Gap="1rem" Class="rz-p-4">	
-			<RadzenStack Gap="0">
-				<RadzenImage Path="@my.HeadImgUrl" Style="width: 80px; height: 80px; border-radius: 50%;" />
-				<RadzenText  class="text-center"><a href="/updatenickname" >@my.NickName</a></RadzenText>
-			</RadzenStack>
-			<RadzenStack Gap="0">
-				<RadzenText TextStyle="TextStyle.Subtitle1">得分</RadzenText>
-				<RadzenText TextStyle="TextStyle.H2"><b>@my.Score</b></RadzenText>
-			</RadzenStack>
-		</RadzenStack>
-	</RadzenCard>
-</div>
+﻿@inject NavigationManager navigationManager
 
+
+    <RadzenCard Variant="Variant.Flat" Class="rz-my-6" Style="padding:inherit">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceAround" Gap="1rem" Class="rz-p-4">
+            <RadzenStack Gap="0">
+                <RadzenImage Path="@my.HeadImgUrl" Style="width: 60px; height: 60px; border-radius: 50%;" />
+                <RadzenText class="text-center"><a href=@($"/updatenickname?ReturnUrl={navigationManager.Uri}")>@my.NickName</a></RadzenText>
+            </RadzenStack>
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.Subtitle1">得分</RadzenText>
+                <RadzenText TextStyle="TextStyle.H2"><b>@my.Score</b></RadzenText>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
 
 @code {
-	[Parameter]
-	public MyInfo my { get; set; } = new();
+    [Parameter]
+    public MyInfo my { get; set; } = new();
 }

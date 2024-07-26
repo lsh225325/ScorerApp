@@ -1,42 +1,57 @@
-﻿@page "/CreateViewShareWay"
+﻿@inject NavigationManager NavigationManager;
+@inject DialogService dialogService;
+@inject IJSRuntime JSRuntime;
+@attribute [Authorize]
 
-<h3>房间分享方法</h3>
+<PageTitle>好手气·房间分享方式</PageTitle>
 
-<div class="row justify-content-center" style="height:300px">
-    <div class="col-md-6 align-content-center">
-        <h1 class="text-center">选择一种方法邀请朋友进入房间</h1>
-        <div class="form-floating mb-3" style="margin-top:50px">
-            《邀请方式》
-            <select class="form-select" aria-label="Default select example" @onchange="ChangeShareWay">
-                <option value="0">链接</option>
-                <option value="1">二维码</option>
-            </select>
-            <ul>
-                <li>
-                    <a href="https://www.baidu.com">链接</a>
-                </li>
-                <li>
-                    <a>
-                        向朋友发送链接
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        向朋友发送二维码
-                    </a>
-                </li>
-            </ul>
-
+<div class="row justify-content-center" style="height:350px">
+    <div class="col-md-8 align-content-center">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H4" class="text-center">房间已成功建立！</RadzenText>
+        <div class="form-floating mb-3">
+            <RadzenCard Variant="Variant.Flat">
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H5">方式一：发送房间号：“ @roomNo ”给朋友</RadzenText>
+                <RadzenToggleButton @bind-Value=@value Change=@CopySerialNumber Text="@(value ? "已复制" : "复制房间号" )"
+                                    Shade="Shade.Darker" ButtonStyle="ButtonStyle.Info" ToggleButtonStyle="ButtonStyle.Success"
+                                    class="rz-border-radius-6 rz-my-1" />
+            </RadzenCard>
         </div>
+        <div class="form-floating mb-3">
+            <RadzenCard Variant="Variant.Flat">
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H5">方式二：</RadzenText>
+                <RadzenButton Shade="Shade.Darker" Variant="Variant.Flat" class="rz-border-radius-6 rz-my-1"
+                              Click="@SharePage"
+                              Text="点击分享这个页面" ButtonStyle="ButtonStyle.Info" />
+                <RadzenTextBox Value="@uri" aria-label="TextBox with placeholder" />
+            </RadzenCard>
+        </div>
+
+   
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="0.5rem">
+        <RadzenButton Click="@((args) => dialogService.Close(true))"  Text="取消"
+                          Shade="Shade.Darker" ButtonStyle="ButtonStyle.Info" Variant="Variant.Outlined"
+                          class="rz-border-radius-6 rz-my-1" Style="width: 80%" />
+    </RadzenStack>
 
     </div>
 </div>
 
 
 @code {
-    private void ChangeShareWay()
+    [Parameter] public string roomNo { get; set; } = "";
+    [Parameter] public string uri { get; set; } = "";
+
+    bool value;
+
+    private async Task SharePage()
     {
-        
+        //将uri中的"/create"替代为空
+        uri = uri.Replace("/create", "");
+        await JSRuntime.InvokeVoidAsync("sharePage", uri);
     }
 
+    private async Task CopySerialNumber()
+    {
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", roomNo);
+    }
 }

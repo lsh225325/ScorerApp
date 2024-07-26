@@ -17,6 +17,74 @@
     <Routes @rendermode="RenderModeForPage" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+    <script>
+        window.copyToClipboard = (text) => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        console.log('Text copied to clipboard');
+                    })
+                    .catch((error) => {
+                        console.error('Error copying text to clipboard:', error);
+                        fallbackCopyTextToClipboard(text);
+                    });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        };
+
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    console.log('Text copied to clipboard using fallback');
+                } else {
+                    console.error('Fallback: Unable to copy text');
+                }
+            } catch (err) {
+                console.error('Fallback: Error copying text', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+                
+
+        window.sharePage = (text) => {
+            if (navigator.share) {
+                navigator.share({
+                    title: '好手气·打牌记分',
+                    text: '朋友分享房间给你',
+                    url: text
+                }).catch((error) => console.log('Error sharing:', error));
+            } else {
+                alert("Web Share API is not supported in this browser.");
+            }
+        };
+
+       
+        function enterFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.mozRequestFullScreen) { // Firefox
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE/Edge
+                elem.msRequestFullscreen();
+            }
+        }
+
+
+    </script>
 </body>
 
 </html>
