@@ -3,7 +3,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* 设置user-scalable=no可以防止用户缩放页面，width=device-width将页面宽度设为设备宽度，initial-scale=1.0设置初始缩放级别。 *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no" />
+
     <base href="/" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="app.css" />
@@ -56,7 +58,6 @@
             document.body.removeChild(textArea);
         }
                 
-
         window.sharePage = (text) => {
             if (navigator.share) {
                 navigator.share({
@@ -68,8 +69,7 @@
                 alert("Web Share API is not supported in this browser.");
             }
         };
-
-       
+      
         function enterFullScreen() {
             let elem = document.documentElement;
             if (elem.requestFullscreen) {
