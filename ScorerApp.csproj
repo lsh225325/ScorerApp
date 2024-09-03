@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Pages\ShareWayQcoderComponent.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="favicon.ico" />
   </ItemGroup>
 
@@ -99,6 +103,18 @@
     <None Update="ScorerDB.db-wal">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\Pages\ShareWayQcoderComponent.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\Pages\ShareWayQcoderComponent.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Components\Pages\ShareWayQcoderComponent.razor" />
   </ItemGroup>
 
 </Project>
